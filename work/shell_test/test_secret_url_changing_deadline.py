@@ -5,9 +5,16 @@ import time
 from selenium.webdriver.common.by import By
 
 import config
-from methods_required_during_testing import d, login, logout, set_secret_url,\
-    change_secret_url_expiration_date, search_and_display_target_item, click_file_information_button,\
+from methods_required_during_testing import (
+    d,
+    login,
+    set_secret_url_with_login,
+    change_secret_url_expiration_date,
+    change_secret_url_expiration_date_with_login,
+    search_and_display_target_item,
+    click_file_information_button,
     click_secret_url_btn
+)
 
 # pytest shell_test/test_secret_url_changing_deadline.py::TestPreparation
 class TestPreparation:
@@ -25,12 +32,12 @@ class TestPreparation:
         Args:
             driver(WebDriver): WebDriver object
         """
+        # enable secret url and set expiration date to 3
+        set_secret_url_with_login(driver, True)
+        change_secret_url_expiration_date_with_login(driver, 3)
+
         # log in as Repository Administrator
         login_as_target(driver, 'Repository')
-
-        # enable secret url and set expiration date to 3
-        set_secret_url(driver, True)
-        change_secret_url_expiration_date(driver, 3)
 
         # search target item
         search_and_display_target_item(driver, config.item_name_dic['before_publish'])
@@ -59,15 +66,9 @@ class TestPreparation:
         Args:
             driver(WebDriver): WebDriver object
         """
-        # log in as Repository Administrator for set expiration date to 3
-        login_as_target(driver, 'Repository')
-
         # enable secret url and set expiration date to 3
-        set_secret_url(driver, True)
-        change_secret_url_expiration_date(driver, 3)
-
-        # log out
-        logout(driver)
+        set_secret_url_with_login(driver, True)
+        change_secret_url_expiration_date_with_login(driver, 3)
 
         # log in as Contributor
         login_as_target(driver, 'RegCon')
@@ -99,12 +100,12 @@ class TestPreparation:
         Args:
             driver(WebDriver): WebDriver object
         """
+        # enable secret url and set expiration date to 3
+        set_secret_url_with_login(driver, True)
+        change_secret_url_expiration_date_with_login(driver, 3)
+
         # log in as Repository Administrator
         login_as_target(driver, 'Repository')
-
-        # enable secret url and set expiration date to 3
-        set_secret_url(driver, True)
-        change_secret_url_expiration_date(driver, 3)
 
         # search target item
         search_and_display_target_item(driver, config.item_name_dic['private'])
@@ -133,15 +134,9 @@ class TestPreparation:
         Args:
             driver(WebDriver): WebDriver object
         """
-        # log in as Repository Administrator for set expiration date to 3
-        login_as_target(driver, 'Repository')
-
         # enable secret url and set expiration date to 3
-        set_secret_url(driver, True)
-        change_secret_url_expiration_date(driver, 3)
-
-        # log out
-        logout(driver)
+        set_secret_url_with_login(driver, True)
+        change_secret_url_expiration_date_with_login(driver, 3)
 
         # log in as Contributor
         login_as_target(driver, 'RegCon')
@@ -167,8 +162,8 @@ def test_change_expiration_date(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator
-    login_as_target(driver, 'Repository')
+    # log in as System Administrator
+    login_as_target(driver, 'System')
 
     # change expiration date from 3 to 5
     change_secret_url_expiration_date(driver, 5)

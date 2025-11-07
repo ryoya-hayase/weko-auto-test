@@ -5,11 +5,22 @@ import shutil
 import subprocess
 import time
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 import config
-from methods_required_during_testing import d, login, logout, search_and_display_target_item,\
-    click_detail_item_button, click_print_btn, click_quit_btn, enter_guest_email_for_get_usage_application,\
-    enter_guest_email_after_approval, click_approval_btn, click_reject_btn
+from methods_required_during_testing import (
+    d,
+    login,
+    logout,
+    search_and_display_target_item,
+    click_detail_item_button,
+    click_print_btn,
+    click_quit_btn,
+    enter_guest_email_for_get_usage_application,
+    enter_guest_email_after_approval,
+    click_approval_btn,
+    click_reject_btn,
+)
 
 # pytest auto_test/test_application_for_use.py::TestScenario1
 class TestScenario1:
@@ -859,7 +870,10 @@ class TestScenario3:
         driver.find_element(By.CLASS_NAME, 'next-button').click()
         time.sleep(3)
         driver.find_element(By.XPATH, '//*[@id="btn-finish"]').click()
-        time.sleep(3)
+        WebDriverWait(driver, 10).until(
+            lambda d: len(d.find_elements(
+                By.XPATH, '//*[@id="myTabContent"]/div[2]/div[2]/button[2]')) > 0
+        )
         save_screenshot(driver, inspect.currentframe().f_code.co_name, '6')
         activity_id = driver.find_element(By.XPATH, '//*[@id="activity_id"]').text
         assert check_approved_application_mail(
@@ -890,7 +904,7 @@ class TestScenario3:
         table = driver.find_element(By.XPATH, '//*[@id="myTabContent"]/div[4]/div/div[1]/table')
         headers_text = [header.text for header in table.find_elements(By.TAG_NAME, 'th')]
         activity_id_idx = headers_text.index('Activity')
-        workflow_idx = headers_text.index('Workflow')
+        workflow_idx = headers_text.index('WorkFlow')
         user_idx = headers_text.index('User')
         rows = table.find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
         for row in rows:
@@ -993,7 +1007,10 @@ class TestScenario3:
         driver.find_element(By.CLASS_NAME, 'next-button').click()
         time.sleep(3)
         driver.find_element(By.XPATH, '//*[@id="btn-finish"]').click()
-        time.sleep(3)
+        WebDriverWait(driver, 10).until(
+            lambda d: len(d.find_elements(
+                By.XPATH, '//*[@id="myTabContent"]/div[2]/div[2]/button[2]')) > 0
+        )
         save_screenshot(driver, inspect.currentframe().f_code.co_name, '7')
         assert check_approved_application_mail(
             config.users['General']['mail'],
@@ -1248,7 +1265,7 @@ class TestScenario3:
         table = driver.find_element(By.XPATH, '//*[@id="myTabContent"]/div[4]/div/div[1]/table')
         headers_text = [header.text for header in table.find_elements(By.TAG_NAME, 'th')]
         activity_id_idx = headers_text.index('Activity')
-        workflow_idx = headers_text.index('Workflow')
+        workflow_idx = headers_text.index('WorkFlow')
         user_idx = headers_text.index('User')
         rows = table.find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
         for row in rows:
@@ -1306,8 +1323,6 @@ class TestScenario3:
         save_screenshot(driver, inspect.currentframe().f_code.co_name, '13_after')
 
         # cancel the workflow to do other tests
-        logout(driver)
-        login_as_target(driver, 'Repository')
         driver.get(config.base_url + '/workflow/activity/detail/' + activity_id)
         time.sleep(3)
         click_quit_btn(driver)
@@ -1390,7 +1405,7 @@ class TestScenario3:
         table = driver.find_element(By.XPATH, '//*[@id="myTabContent"]/div[4]/div/div[1]/table')
         headers_text = [header.text for header in table.find_elements(By.TAG_NAME, 'th')]
         activity_id_idx = headers_text.index('Activity')
-        workflow_idx = headers_text.index('Workflow')
+        workflow_idx = headers_text.index('WorkFlow')
         user_idx = headers_text.index('User')
         rows = table.find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
         for row in rows:
@@ -1875,7 +1890,7 @@ class TestScenario4:
             config.item_name_dic['scenario_4'],
             activity_id)
 
-        # 13. Registered content is downloaded.
+        # 14. Registered content is downloaded.
         lines = get_latest_mail_body(config.guest_mail.split('@', 1)[0])
         url = [line for line in lines if line.startswith('https://')][0]
         driver.get(url)
@@ -2981,7 +2996,7 @@ class TestScenario5:
         table = driver.find_element(By.XPATH, '//*[@id="myTabContent"]/div[4]/div/div[1]/table')
         headers_text = [header.text for header in table.find_elements(By.TAG_NAME, 'th')]
         activity_id_idx = headers_text.index('Activity')
-        workflow_idx = headers_text.index('Workflow')
+        workflow_idx = headers_text.index('WorkFlow')
         user_idx = headers_text.index('User')
         rows = table.find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
         for row in rows:
@@ -3039,8 +3054,6 @@ class TestScenario5:
         save_screenshot(driver, inspect.currentframe().f_code.co_name, '14_after')
 
         # cancel the workflow to do other tests
-        logout(driver)
-        login_as_target(driver, 'Repository')
         driver.get(config.base_url + '/workflow/activity/detail/' + activity_id)
         time.sleep(3)
         click_quit_btn(driver)
@@ -3137,7 +3150,7 @@ class TestScenario5:
         table = driver.find_element(By.XPATH, '//*[@id="myTabContent"]/div[4]/div/div[1]/table')
         headers_text = [header.text for header in table.find_elements(By.TAG_NAME, 'th')]
         activity_id_idx = headers_text.index('Activity')
-        workflow_idx = headers_text.index('Workflow')
+        workflow_idx = headers_text.index('WorkFlow')
         user_idx = headers_text.index('User')
         rows = table.find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
         for row in rows:
@@ -3993,7 +4006,10 @@ class TestScenario6:
         target_element.find_element(By.TAG_NAME, 'a').click()
         time.sleep(3)
         click_approval_btn(driver)
-        time.sleep(3)
+        WebDriverWait(driver, 10).until(
+            lambda d: len(d.find_elements(
+                By.XPATH, '//*[@id="myTabContent"]/div[2]/div[2]/button[2]')) > 0
+        )
         save_screenshot(driver, inspect.currentframe().f_code.co_name, '13')
         assert check_approved_application_mail_for_guest(
             config.guest_mail,

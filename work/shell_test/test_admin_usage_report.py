@@ -2,11 +2,19 @@ import inspect
 import os
 import time
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 import config
-from methods_required_during_testing import d, login, logout, change_usage_report_workflow_access,\
-    click_quit_btn, search_and_display_target_item, enter_guest_email_for_get_usage_application,\
+from methods_required_during_testing import (
+    d,
+    login,
+    logout,
+    change_usage_report_workflow_access,
+    click_quit_btn,
+    search_and_display_target_item,
+    enter_guest_email_for_get_usage_application,
     enter_guest_email_after_approval
+)
 
 # pytest shell_test/test_admin_usage_report.py::TestPreparation
 class TestPreparation:
@@ -14,15 +22,15 @@ class TestPreparation:
     # pytest shell_test/test_admin_usage_report.py::TestPreparation::test_no_10
     def test_no_10(self, driver):
         """Prepare for test No.10
-        
-        User's Role is Repository Administrator
+
+        User's Role is System Administrator
         Expiration date is 5
 
         Args:
             driver(WebDriver): Webdriver object
         """
-        # log in as Repository Administrator
-        login_as_target(driver, 'Repository')
+        # log in as System Administrator
+        login_as_target(driver, 'System')
 
         # set expiration date to 5
         change_usage_report_workflow_access(driver, 5)
@@ -45,14 +53,14 @@ class TestPreparation:
     # pytest shell_test/test_admin_usage_report.py::TestPreparation::test_no_9
     def test_no_9(self, driver):
         """No.9 The change of expilation date must be adapted
-        
-        Log in User's role is Repository Administrator
-        
+
+        Log in User's role is System Administrator
+
         Args:
             driver(WebDriver): WebDriver object
         """
-        # log in as Repostitory Administrator
-        login_as_target(driver, 'Repository')
+        # log in as System Administrator
+        login_as_target(driver, 'System')
 
         # change expiration date
         change_usage_report_workflow_access(driver, 3)
@@ -72,8 +80,8 @@ class TestPreparation:
     # pytest shell_test/test_admin_usage_report.py::TestPreparation::test_no_11
     def test_no_11(self, driver):
         """Prepare for test No.11
-        
-        User's Role is Repository Administrator
+
+        User's Role is System Administrator
         Expiration date is 3
         
         Args:
@@ -168,7 +176,7 @@ def create_usage_report(driver, target_key):
     search_and_display_target_item(driver, config.item_name_dic[target_key])
 
     # create and transiton to the usage registration workflow
-    driver.find_element(By.XPATH, '//*[@id="detail-item"]/table/tbody/tr/td[3]/a').click()
+    driver.find_element(By.XPATH, '//*[@id="detail-item"]/table/tbody/tr/td[3]/a[1]/button').click()
     time.sleep(1)
     modal = driver.find_element(By.CLASS_NAME, 'modal.fade.in')
     modal_id = modal.get_attribute('id')
@@ -184,7 +192,10 @@ def create_usage_report(driver, target_key):
     lines = get_latest_mail_body(config.guest_mail.split('@', 1)[0])
     url = [line for line in lines if line.startswith('https://')][0]
     driver.get(url)
-    time.sleep(3)
+    WebDriverWait(driver, 10).until(
+        lambda d: len(d.find_elements(By.CLASS_NAME, 'next-button')) > 0,
+        'Usage report workflow page loading timeout'
+    )
 
     # complete the workflow and download the file to create a usage report
     driver.find_element(By.CLASS_NAME, 'next-button').click()

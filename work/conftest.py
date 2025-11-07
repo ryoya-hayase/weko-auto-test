@@ -1,3 +1,4 @@
+import os
 import pytest
 import time
 
@@ -30,6 +31,15 @@ def driver():
         setup_driver.teardown_method()
         time.sleep(1)
         raise e
+    finally:
+        # Clean download folder
+        file_paths = [
+            os.path.join(config.base_download_dir, f)
+            for f in os.listdir(config.base_download_dir)
+            if os.path.isfile(os.path.join(config.base_download_dir, f))
+        ]
+        for file_path in file_paths:
+            os.remove(file_path)
 
 @pytest.fixture()
 def enable_secret_url(driver):

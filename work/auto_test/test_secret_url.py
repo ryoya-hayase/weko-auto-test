@@ -7,9 +7,17 @@ import time
 from selenium.webdriver.common.by import By
 
 import config
-from methods_required_during_testing import d, login, logout, search_and_display_target_item,\
-    click_file_information_button, click_secret_url_btn, click_mail_link, set_secret_url,\
-    change_secret_url_download_limit
+from methods_required_during_testing import(
+    d,
+    login,
+    logout,
+    search_and_display_target_item,
+    click_file_information_button,
+    click_secret_url_btn,
+    click_mail_link,
+    set_secret_url_with_login,
+    change_secret_url_download_limit_with_login
+)
 
 # pytest auto_test/test_secret_url.py::test_no_1
 def test_no_1(enable_secret_url):
@@ -657,8 +665,8 @@ def test_no_27(enable_secret_url):
 
 # pytest auto_test/test_secret_url.py::test_no_28
 def test_no_28(enable_secret_url):
-    """No.28 Secret URL button is hidden
-    
+    """No.28 Secret URL issuance and download are possible.
+
     Secret URL is enabled
     Expiration Date is 3
     Download Limit is 3
@@ -677,10 +685,40 @@ def test_no_28(enable_secret_url):
     # display content's info
     click_file_information_button(enable_secret_url)
 
-    # check secret url button is hidden
-    check_secret_url_button_is_hidden(enable_secret_url, True)
+    # click secret url button
+    click_secret_url_btn(enable_secret_url)
+
+    # check mail
+    check_secret_url_mail(
+        enable_secret_url,
+        config.users['PrxRegCon']['mail'],
+        config.item_name_dic['before_publish'],
+        3,
+        3)
+
+    # download the target content
+    click_mail_link(enable_secret_url, config.users['PrxRegCon']['mail'].split('@', 1)[0])
+
+    # check download file
+    file_list = os.listdir(config.base_download_dir)
+    assert 'before_publish.txt' in file_list
+
+    # download the target content several times
+    for i in range(3):
+        click_mail_link(enable_secret_url, config.users['PrxRegCon']['mail'].split('@', 1)[0])
+        if i < 2:
+            # check download file
+            file_list = os.listdir(config.base_download_dir)
+            assert 'before_publish (' + str(i + 1) + ').txt' in file_list
+        else:
+            # check over download limit error message
+            check_over_download_limit_error_message(enable_secret_url)
 
     save_screenshot(enable_secret_url, inspect.currentframe().f_code.co_name)
+
+    # move downloaded files to do other tests
+    move_target_files = [file for file in file_list if file.startswith('before_publish')]
+    move_downloaded_files(move_target_files, inspect.currentframe().f_code.co_name)
 
 # pytest auto_test/test_secret_url.py::test_no_29
 def test_no_29(enable_secret_url):
@@ -1217,7 +1255,7 @@ def test_no_51(enable_secret_url):
 
 # pytest auto_test/test_secret_url.py::test_no_52
 def test_no_52(enable_secret_url):
-    """No.52 Secret URL button is hidden
+    """No.52 Secret URL issuance and download are possible.
     
     Secret URL is enabled
     Expiration Date is 3
@@ -1237,10 +1275,40 @@ def test_no_52(enable_secret_url):
     # display content's info
     click_file_information_button(enable_secret_url)
 
-    # check secret url button is hidden
-    check_secret_url_button_is_hidden(enable_secret_url, True)
+    # click secret url button
+    click_secret_url_btn(enable_secret_url)
+
+    # check mail
+    check_secret_url_mail(
+        enable_secret_url,
+        config.users['PrxRegCon']['mail'],
+        config.item_name_dic['private'],
+        3,
+        3)
+
+    # download the target content
+    click_mail_link(enable_secret_url, config.users['PrxRegCon']['mail'].split('@', 1)[0])
+
+    # check download file
+    file_list = os.listdir(config.base_download_dir)
+    assert 'private.txt' in file_list
+
+    # download the target content several times
+    for i in range(3):
+        click_mail_link(enable_secret_url, config.users['PrxRegCon']['mail'].split('@', 1)[0])
+        if i < 2:
+            # check download file
+            file_list = os.listdir(config.base_download_dir)
+            assert 'private (' + str(i + 1) + ').txt' in file_list
+        else:
+            # check over download limit error message
+            check_over_download_limit_error_message(enable_secret_url)
 
     save_screenshot(enable_secret_url, inspect.currentframe().f_code.co_name)
+
+    # move downloaded files to do other tests
+    move_target_files = [file for file in file_list if file.startswith('private')]
+    move_downloaded_files(move_target_files, inspect.currentframe().f_code.co_name)
 
 # pytest auto_test/test_secret_url.py::test_no_53
 def test_no_53(enable_secret_url):
@@ -1331,9 +1399,6 @@ def test_no_56(disable_secret_url):
     """
     # log in as Repository Administrator
     login_as_target(disable_secret_url, 'Repository')
-
-    # disable secret url
-    set_secret_url(disable_secret_url, False)
 
     # search target item
     search_and_display_target_item(disable_secret_url, config.item_name_dic['open_access'])
@@ -2256,11 +2321,11 @@ def test_no_91(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
+    # enable secret url
+    set_secret_url_with_login(driver, True)
+
     # log in as Repository Administrator
     login_as_target(driver, 'Repository')
-
-    # enable secret url
-    set_secret_url(driver, True)
 
     # search target item
     search_and_display_target_item(driver, config.item_name_dic['before_publish'])
@@ -2271,8 +2336,14 @@ def test_no_91(driver):
     # click secret url button
     click_secret_url_btn(driver)
 
+    # log out
+    logout(driver)
+
     # disable secret url
-    set_secret_url(driver, False)
+    set_secret_url_with_login(driver, False)
+
+    # log in as Repository Administrator
+    login_as_target(driver, 'Repository')
 
     # download the target file
     click_mail_link(driver, config.users['Repository']['mail'].split('@', 1)[0])
@@ -2280,6 +2351,8 @@ def test_no_91(driver):
     # check error page has the class what name is error-page
     error_page = driver.find_elements(By.CLASS_NAME, 'error-page')
     assert len(error_page) > 0, 'This page is not error page'
+
+    save_screenshot(driver, inspect.currentframe().f_code.co_name)
 
 # pytest auto_test/test_secret_url.py::test_no_92
 def test_no_92(driver):
@@ -2294,14 +2367,8 @@ def test_no_92(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator for enable secret url
-    login_as_target(driver, 'Repository')
-
     # enable secret url
-    set_secret_url(driver, True)
-
-    # log out
-    logout(driver)
+    set_secret_url_with_login(driver, True)
 
     # log in as Contributor
     login_as_target(driver, 'RegCon')
@@ -2318,14 +2385,8 @@ def test_no_92(driver):
     # log out
     logout(driver)
 
-    # log in as Repository Administrator for disable secret url
-    login_as_target(driver, 'Repository')
-
     # disable secret url
-    set_secret_url(driver, False)
-
-    # log out
-    logout(driver)
+    set_secret_url_with_login(driver, False)
 
     # log in as Contributor
     login_as_target(driver, 'RegCon')
@@ -2336,6 +2397,8 @@ def test_no_92(driver):
     # check error page has the class what name is error-page
     error_page = driver.find_elements(By.CLASS_NAME, 'error-page')
     assert len(error_page) > 0, 'This page is not error page'
+
+    save_screenshot(driver, inspect.currentframe().f_code.co_name)
 
 # pytest auto_test/test_secret_url.py::test_no_93
 def test_no_93(driver):
@@ -2350,11 +2413,11 @@ def test_no_93(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Admministrator
-    login_as_target(driver, 'Repository')
-
     # enable secret url
-    set_secret_url(driver, True)
+    set_secret_url_with_login(driver, True)
+
+    # log in as Repository Administrator
+    login_as_target(driver, 'Repository')
 
     # search target item
     search_and_display_target_item(driver, config.item_name_dic['private'])
@@ -2365,8 +2428,14 @@ def test_no_93(driver):
     # click secret url button
     click_secret_url_btn(driver)
 
+    # log out
+    logout(driver)
+
     # disable secret url
-    set_secret_url(driver, False)
+    set_secret_url_with_login(driver, False)
+
+    # log in as Repository Administrator
+    login_as_target(driver, 'Repository')
 
     # download the target file
     click_mail_link(driver, config.users['Repository']['mail'].split('@', 1)[0])
@@ -2374,6 +2443,8 @@ def test_no_93(driver):
     # check error page has the class what name is error-page
     error_page = driver.find_elements(By.CLASS_NAME, 'error-page')
     assert len(error_page) > 0, 'This page is not error page'
+
+    save_screenshot(driver, inspect.currentframe().f_code.co_name)
 
 # pytest auto_test/test_secret_url.py::test_no_94
 def test_no_94(driver):
@@ -2388,14 +2459,8 @@ def test_no_94(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator for enable secret url
-    login_as_target(driver, 'Repository')
-
     # enable secret url
-    set_secret_url(driver, True)
-
-    # log out
-    logout(driver)
+    set_secret_url_with_login(driver, True)
 
     # log in as Contributor
     login_as_target(driver, 'RegCon')
@@ -2412,14 +2477,8 @@ def test_no_94(driver):
     # log out
     logout(driver)
 
-    # log in as Repository Administrator for disable secret url
-    login_as_target(driver, 'Repository')
-
     # disable secret url
-    set_secret_url(driver, False)
-
-    # log out
-    logout(driver)
+    set_secret_url_with_login(driver, False)
 
     # log in as Contributor
     login_as_target(driver, 'RegCon')
@@ -2430,6 +2489,8 @@ def test_no_94(driver):
     # check error page has the class what name is error-page
     error_page = driver.find_elements(By.CLASS_NAME, 'error-page')
     assert len(error_page) > 0, 'This page is not error page'
+
+    save_screenshot(driver, inspect.currentframe().f_code.co_name)
 
 # pytest auto_test/test_secret_url.py::test_no_95
 def test_no_95(driver):
@@ -2444,12 +2505,12 @@ def test_no_95(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
+    # enable secret url and set download limit to 3
+    set_secret_url_with_login(driver, True)
+    change_secret_url_download_limit_with_login(driver, 3)
+
     # log in as Repository Administrator
     login_as_target(driver, 'Repository')
-
-    # enable secret url and set download limit to 3
-    set_secret_url(driver, True)
-    change_secret_url_download_limit(driver, 3)
 
     # search target item
     search_and_display_target_item(driver, config.item_name_dic['before_publish'])
@@ -2460,8 +2521,14 @@ def test_no_95(driver):
     # click secret url button
     click_secret_url_btn(driver)
 
+    # log out
+    logout(driver)
+
     # set download limit to 5
-    change_secret_url_download_limit(driver, 5)
+    change_secret_url_download_limit_with_login(driver, 5)
+
+    # log in as Repository Administrator
+    login_as_target(driver, 'Repository')
 
     # download the target content several times
     for i in range(6):
@@ -2494,15 +2561,9 @@ def test_no_96(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator for set download limit to 3
-    login_as_target(driver, 'Repository')
-
     # enable secret url and set download limit to 3
-    set_secret_url(driver, True)
-    change_secret_url_download_limit(driver, 3)
-
-    # log out
-    logout(driver)
+    set_secret_url_with_login(driver, True)
+    change_secret_url_download_limit_with_login(driver, 3)
 
     # log in as Contributor
     login_as_target(driver, 'RegCon')
@@ -2519,14 +2580,8 @@ def test_no_96(driver):
     # log out
     logout(driver)
 
-    # log in as Repository Administrator for set download limit to 5
-    login_as_target(driver, 'Repository')
-
     # set download limit to 5
-    change_secret_url_download_limit(driver, 5)
-
-    # log out
-    logout(driver)
+    change_secret_url_download_limit_with_login(driver, 5)
 
     # log in as Contributor
     login_as_target(driver, 'RegCon')
@@ -2562,12 +2617,12 @@ def test_no_97(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
+    # enable secret url and set download limit to 3
+    set_secret_url_with_login(driver, True)
+    change_secret_url_download_limit_with_login(driver, 3)
+
     # log in as Repository Administrator
     login_as_target(driver, 'Repository')
-
-    # enable secret url and set download limit to 3
-    set_secret_url(driver, True)
-    change_secret_url_download_limit(driver, 3)
 
     # search target item
     search_and_display_target_item(driver, config.item_name_dic['private'])
@@ -2578,8 +2633,14 @@ def test_no_97(driver):
     # click secret url button
     click_secret_url_btn(driver)
 
+    # log out
+    logout(driver)
+
     # set download limit to 5
-    change_secret_url_download_limit(driver, 5)
+    change_secret_url_download_limit_with_login(driver, 5)
+
+    # log in as Repository Administrator
+    login_as_target(driver, 'Repository')
 
     # download the target content several times
     for i in range(6):
@@ -2612,15 +2673,9 @@ def test_no_98(driver):
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator for set download limit to 3
-    login_as_target(driver, 'Repository')
-
     # enable secret url and set download limit to 3
-    set_secret_url(driver, True)
-    change_secret_url_download_limit(driver, 3)
-
-    # log out
-    logout(driver)
+    set_secret_url_with_login(driver, True)
+    change_secret_url_download_limit_with_login(driver, 3)
 
     # log in as Contributor
     login_as_target(driver, 'RegCon')
@@ -2637,14 +2692,8 @@ def test_no_98(driver):
     # log out
     logout(driver)
 
-    # log in as Repository Administrator for set download limit to 5
-    login_as_target(driver, 'Repository')
-
     # set download limit to 5
-    change_secret_url_download_limit(driver, 5)
-
-    # log out
-    logout(driver)
+    change_secret_url_download_limit_with_login(driver, 5)
 
     # log in as Contributor
     login_as_target(driver, 'RegCon')
@@ -2795,15 +2844,17 @@ def check_secret_url_mail(driver, mail_address, item_name, expiration_date_num, 
     secret_url_info_en = [line for line in lines if line.startswith('Secret URL for')]
     limit_sentence_jp = [line for line in lines if line.startswith('このURLは')]
     limit_sentence_en = [line for line in lines if line.startswith('This URL is')]
-    expiration_date = datetime.datetime.today() + datetime.timedelta(days=expiration_date_num)
+    download_limit_sentence_jp = [line for line in lines if line.startswith('ダウンロードは')]
+    download_limit_sentence_en = [line for line in lines if line.startswith('You can download')]
+    expiration_date = datetime.datetime.today() + datetime.timedelta(days=expiration_date_num+1)
     assert secret_url_info_jp[0].find(item_name) != -1\
         and secret_url_info_jp[0].find(file_name) != -1
     assert secret_url_info_en[0].find(item_name) != -1\
         and secret_url_info_en[0].find(file_name) != -1
-    assert limit_sentence_jp[0].find(expiration_date.strftime('%Y-%m-%d')) != -1\
-        and limit_sentence_jp[0].find(str(download_limit) + '回') != -1
-    assert limit_sentence_en[0].find(expiration_date.strftime('%Y-%m-%d')) != -1\
-        and limit_sentence_en[0].find(str(download_limit) + ' times') != -1
+    assert limit_sentence_jp[0].find(expiration_date.strftime('%Y-%m-%d')) != -1
+    assert limit_sentence_en[0].find(expiration_date.strftime('%Y-%m-%d')) != -1
+    assert download_limit_sentence_jp[0].find(str(download_limit) + '回') != -1
+    assert download_limit_sentence_en[0].find(str(download_limit) + ' times') != -1
 
 def check_secret_url_is_difference(user_name):
     """Check secret url is difference between the latest mail and the second latest mail

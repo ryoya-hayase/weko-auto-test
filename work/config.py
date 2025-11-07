@@ -11,13 +11,14 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from pathlib import Path
 
 # 変数
-base_url = "https://192.168.56.106"
+base_url = "https://192.168.56.109"
 base_save_folder = "screenshots/"
 base_download_dir = "downloads/"
 base_secret_url_dir = 'secret_url/'
 test_account_mail = "contributor@weko-selenium.jp"
 test_account_password = "uspass123"
 guest_mail = "guest@weko-selenium.jp"
+guest_password = "Aa12345-"
 
 term_title = 'Test Terms and Conditions Title'
 edited_term_title = 'Edited ' + term_title
@@ -79,7 +80,7 @@ mail_subjects = {
     'approved_application':
         '利用申請の承認のお知らせ（ログインユーザー向け）／Your application was approved  （for logged in users）',
     'approved_application_for_guest':
-        '利用申請の承認のお知らせ（ゲストユーザー向け）／Guest\'\'s application was approved （for guest user）',
+        '利用申請の承認のお知らせ（ゲストユーザー向け）／Guest\'s application was approved （for guest user）',
     'results_of_the_review':
         '利用申請の審査結果について（ログインユーザー向け）／The results of the review of your application  （for logged in users）',
     'results_of_the_review_for_guest':

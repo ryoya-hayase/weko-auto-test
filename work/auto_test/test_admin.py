@@ -4,8 +4,14 @@ import time
 from selenium.webdriver.common.by import By
 
 import config
-from methods_required_during_testing import d, login, set_secret_url,\
-    transition_to_mail_template, transition_to_restricted_access
+from methods_required_during_testing import (
+    d,
+    login,
+    set_secret_url,
+    transition_to_mail_template,
+    transition_to_restricted_access,
+    get_mail_template_body_element,
+)
 # pytest auto_test/test_admin.py::test_no_1
 def test_no_1(driver):
     """No.1 Create new mail template
@@ -38,10 +44,9 @@ def test_no_1(driver):
     )
     subject.send_keys(test_subject)
     test_body = 'テストテンプレート本文'
-    body = driver.find_element(
-        By.XPATH,
-        '//*[@id="root"]/div/div[1]/div[2]/div/div/div[2]/textarea'
-    )
+    body = get_mail_template_body_element(driver)
+    if body is None:
+        assert False, 'Mail template body element not found'
     body.send_keys(test_body)
 
     # save mail template
@@ -65,10 +70,9 @@ def test_no_1(driver):
         '//*[@id="root"]/div/div[1]/div[2]/div/div/div[1]/input'
     )
     assert subject.get_attribute('value') == test_subject
-    body = driver.find_element(
-        By.XPATH,
-        '//*[@id="root"]/div/div[1]/div[2]/div/div/div[2]/textarea'
-    )
+    body = get_mail_template_body_element(driver)
+    if body is None:
+        assert False, 'Mail template body element not found'
     assert body.get_attribute('value') == test_body
 
     # scroll down other mail templates
@@ -117,10 +121,9 @@ def test_no_2(driver):
     edited_subject = '編集済_' + subject.get_attribute('value')
     subject.clear()
     subject.send_keys(edited_subject)
-    body = driver.find_element(
-        By.XPATH,
-        '//*[@id="root"]/div/div[1]/div[2]/div/div/div[2]/textarea'
-    )
+    body = get_mail_template_body_element(driver)
+    if body is None:
+        assert False, 'Mail template body element not found'
     edited_body = '編集後のテンプレート\n' + body.get_attribute('value')
     body.clear()
     body.send_keys(edited_body)
@@ -150,15 +153,14 @@ def test_no_2(driver):
         '//*[@id="root"]/div/div[1]/div[2]/div/div/div[1]/input'
     )
     assert subject.get_attribute('value') == edited_subject
-    body = driver.find_element(
-        By.XPATH,
-        '//*[@id="root"]/div/div[1]/div[2]/div/div/div[2]/textarea'
-    )
+    body = get_mail_template_body_element(driver)
+    if body is None:
+        assert False, 'Mail template body element not found'
     assert body.get_attribute('value') == edited_body
 
     # scroll up window and body
     driver.execute_script('window.scroll(0, 0)')
-    driver.execute_script('document.getElementsByTagName("textarea")[0].scroll(0, 0)')
+    driver.execute_script('document.getElementsByTagName("textarea")[0].scrollIntoView()')
     save_screenshot(driver, inspect.currentframe().f_code.co_name)
 
     # restore edited objects
@@ -206,10 +208,9 @@ def test_no_3(driver):
     edited_subject = '編集済_' + subject.get_attribute('value')
     subject.clear()
     subject.send_keys(edited_subject)
-    body = driver.find_element(
-        By.XPATH,
-        '//*[@id="root"]/div/div[1]/div[2]/div/div/div[2]/textarea'
-    )
+    body = get_mail_template_body_element(driver)
+    if body is None:
+        assert False, 'Mail template body element not found'
     edited_body = '編集後のテンプレート\n' + body.get_attribute('value')
     body.clear()
     body.send_keys(edited_body)
@@ -239,15 +240,14 @@ def test_no_3(driver):
         '//*[@id="root"]/div/div[1]/div[2]/div/div/div[1]/input'
     )
     assert subject.get_attribute('value') == edited_subject
-    body = driver.find_element(
-        By.XPATH,
-        '//*[@id="root"]/div/div[1]/div[2]/div/div/div[2]/textarea'
-    )
+    body = get_mail_template_body_element(driver)
+    if body is None:
+        assert False, 'Mail template body element not found'
     assert body.get_attribute('value') == edited_body
 
     # scroll up window and body
     driver.execute_script('window.scroll(0, 0)')
-    driver.execute_script('document.getElementsByTagName("textarea")[0].scroll(0, 0)')
+    driver.execute_script('document.getElementsByTagName("textarea")[0].scrollIntoView()')
     save_screenshot(driver, inspect.currentframe().f_code.co_name)
 
     # restore edited objects
@@ -295,10 +295,9 @@ def test_no_4(driver):
     edited_subject = '編集済_' + subject.get_attribute('value')
     subject.clear()
     subject.send_keys(edited_subject)
-    body = driver.find_element(
-        By.XPATH,
-        '//*[@id="root"]/div/div[1]/div[2]/div/div/div[2]/textarea'
-    )
+    body = get_mail_template_body_element(driver)
+    if body is None:
+        assert False, 'Mail template body element not found'
     edited_body = '編集後のテンプレート\n' + body.get_attribute('value')
     body.clear()
     body.send_keys(edited_body)
@@ -328,14 +327,13 @@ def test_no_4(driver):
         '//*[@id="root"]/div/div[1]/div[2]/div/div/div[1]/input'
     )
     assert subject.get_attribute('value') == edited_subject
-    body = driver.find_element(
-        By.XPATH,
-        '//*[@id="root"]/div/div[1]/div[2]/div/div/div[2]/textarea'
-    )
+    body = get_mail_template_body_element(driver)
+    if body is None:
+        assert False, 'Mail template body element not found'
     assert body.get_attribute('value') == edited_body
 
     # scroll up window and body
-    driver.execute_script('document.getElementsByTagName("textarea")[0].scroll(0, 0)')
+    driver.execute_script('document.getElementsByTagName("textarea")[0].scrollIntoView()')
     save_screenshot(driver, inspect.currentframe().f_code.co_name)
 
     # restore edited objects
@@ -348,14 +346,14 @@ def test_no_4(driver):
 # pytest auto_test/test_admin.py::test_no_5
 def test_no_5(driver):
     """No.5 Create new Terms and Conditions
-    
-    Log in User's role is Repository Administrator
+
+    Log in User's role is System Administrator
 
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator
-    login_as_target(driver, 'Repository')
+    # log in as System Administrator
+    login_as_target(driver, 'System')
 
     # transition to restricted access
     transition_to_restricted_access(driver)
@@ -442,14 +440,14 @@ def test_no_5(driver):
 def test_no_6(driver):
     """No.6 Edit Terms and Conditions
     
-    Log in User's role is Repository Administrator
+    Log in User's role is System Administrator
     No.5 has been executed
 
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator
-    login_as_target(driver, 'Repository')
+    # log in as System Administrator
+    login_as_target(driver, 'System')
 
     # transition to restricted access
     transition_to_restricted_access(driver)
@@ -555,14 +553,14 @@ def test_no_6(driver):
 def test_no_7(driver):
     """No.7 Delete Terms and Conditions
     
-    Log in User's role is Repository Administrator
+    Log in User's role is System Administrator
     No.5 has been executed
 
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator
-    login_as_target(driver, 'Repository')
+    # log in as System Administrator
+    login_as_target(driver, 'System')
 
     # transition to restricted access
     transition_to_restricted_access(driver)
@@ -611,14 +609,14 @@ def test_no_7(driver):
 def test_no_8(driver):
     """No.8 Can't delete Terms and Conditions if it is set to any item
     
-    Log in User's role is Repository Administrator
+    Log in User's role is System Administrator
     The Terms and Conditions if it is set to any item exists
     
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator
-    login_as_target(driver, 'Repository')
+    # log in as System Administrator
+    login_as_target(driver, 'System')
 
     # transition to restricted access
     transition_to_restricted_access(driver)
@@ -654,14 +652,14 @@ def test_no_8(driver):
 def test_no_12(driver):
     """No.12 Check Data Usage Report Work Flow exists
     
-    Log in User's role is Repository Administrator
+    Log in User's role is System Administrator
     Data Usage Report Work Flow if it is before registration exists
 
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator
-    login_as_target(driver, 'Repository')
+    # log in as System Administrator
+    login_as_target(driver, 'System')
 
     # transition to restricted access
     transition_to_restricted_access(driver)
@@ -688,13 +686,13 @@ def test_no_12(driver):
 def test_no_13(driver):
     """No.13 Send Mail of Usage Report Reminder Email
     
-    Log in User's role is Repository Administrator
+    Log in User's role is System Administrator
 
     Args:
         driver(WebDriver): WebDriver object
     """
-    # log in as Repository Administrator
-    login_as_target(driver, 'Repository')
+    # log in as System Administrator
+    login_as_target(driver, 'System')
 
     # transition to restricted access
     transition_to_restricted_access(driver)
@@ -772,13 +770,13 @@ def test_no_14(driver):
 
     # access to admin page
     driver.find_element(By.XPATH, '//*[@id="fixed_header"]/div[2]/div/button').click()
-    driver.find_element(By.XPATH, '//*[@id="fixed_header"]/div[2]/div/ul/li[6]').click()
+    driver.find_element(By.XPATH, '//*[@id="fixed_header"]/div[2]/div/ul/li[7]').click()
     time.sleep(1)
 
     # open Setting
-    driver.find_element(By.XPATH, '/html/body/div/aside/section/ul/li[7]').click()
+    driver.find_element(By.XPATH, '/html/body/div/aside/section/ul/li[12]').click()
 
-    setting_menu = driver.find_element(By.XPATH, '/html/body/div/aside/section/ul/li[7]/ul')
+    setting_menu = driver.find_element(By.XPATH, '/html/body/div/aside/section/ul/li[12]/ul')
     setting_menu_items = setting_menu.find_elements(By.TAG_NAME, 'li')
 
     # check to see if Restricted Access and Mail Templates exist
